@@ -26,7 +26,6 @@ class Chatbot extends React.Component {
     }
 
     var updatedMessages = this.state.userMessages;
-
     var updatedBotMessages = this.state.botMessages;
 
     this.setState({
@@ -34,31 +33,40 @@ class Chatbot extends React.Component {
       botLoading: true
     });
 
-    // Replace with your Dialogflow client token
-   
-  var request = new Request(
-    `https://kora-api.vercel.app/chatbot/message=${newMessage}`
-  );
-
-  fetch(request)
-    .then(response => response.json())
-    .then(json => {
-      var botResponse = json.reply;
-
-      this.setState({
-        botMessages: updatedBotMessages.concat(botResponse),
-        botLoading: false
-      });
-    })
-    .catch(error => {
-      console.log("ERROR:", error);
-       this.setState({
-        botMessages: updatedBotMessages.concat('?'),
-        botLoading: false
-      });
+    var request = new Request("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer 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`,
+        "HTTP-Referer": `kukiapi.xyz`, // Optional, for including your app on openrouter.ai rankings.
+        "X-Title": `Koraai`, // Optional. Shows in rankings on openrouter.ai.
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "model": "microsoft/wizardlm-2-8x22b",
+        "messages": [
+          {"role": "system", "content": "You are Kora, a friendly and helpful assistant developed by EnhanceAI. You have a wide range of skills, including software engineering, programming, bot development, business, accounting, law enforcement procedures, and medical fields. You are fluent in all programming languages and can assist with coding queries. You also have knowledge in mathematics, language translation, and can recommend books across various genres. You can manage social media accounts and assist with homework. You are capable of understanding and responding to complex queries. You aim to make tasks easier, learning more accessible, and information more understandable. You are committed to constant improvement and adaptation."},
+          {"role": "user", "content": newMessage},
+        ],
+      })
     });
 
+    fetch(request)
+      .then(response => response.json())
+      .then(json => {
+        var botResponse = json.reply; // You might need to adjust this based on the actual response structure
 
+        this.setState({
+          botMessages: updatedBotMessages.concat(botResponse),
+          botLoading: false
+        });
+      })
+      .catch(error => {
+        console.log("ERROR:", error);
+        this.setState({
+          botMessages: updatedBotMessages.concat('?'),
+          botLoading: false
+        });
+      });
   };
 
 
